@@ -21,6 +21,7 @@ Spacecraft should use F=-m*del(G) per each step
 Spacecraft actions should be scheduled, manually entered at checkpoints, or paused and entered
 Deep-space maneuvers (DSMs) can use a standard orbit transfer 
 Look into flyby mechanics
+Position tracking can be done with a "states.csv" or other array file, such as "positions.csv", "velocities.csv", etc. Breaking each element into a different file is an option to keep it human-readable, though .pvd or other ParaView-linking files will be useful for visualization in bulk. JSON files can work in an "outputs" folder. 
 
 **Optional/Fun Things**
 Consider burns in existing gravity wells
