@@ -55,7 +55,7 @@ ax.plot3D(sol.y[0,:], sol.y[1,:], sol.y[2.:])
 # Force calculator for nbody-enable objects (spacecraft), option 1
 for object in sim:
     # Checking for nbody simulation check
-    if sim[object][end] = True:
+    if sim[object][end] == True:
         for object2 in sim:
             # Get position
             target = object
