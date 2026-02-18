@@ -7,12 +7,12 @@
 import numpy as np
 import numpy.linalg as la
 print("Problem 2 program output")
-r = [2,0.5,1]
-v = [0.5,0.5,-0.5]
+r = np.array([2,0.5,1])
+v = np.array([0.5,0.5,-0.5])
 # Calculate h
 h = np.cross(r,v)
 h0 = la.norm(h)
-k = [0,0,1]
+k = np.array([0,0,1])
 n = np.cross(k,h)
 n0 = la.norm(n)
 #u = 3.986*10^5
@@ -45,16 +45,16 @@ theta = 18.00
 p = a*(1-ecc**2)
 r0 = p/(1+ecc*np.cos(np.radians(theta)))
 # Using verical vector notation
-r_pqw = [r0*np.cos(np.radians(theta)), r0*np.sin(np.radians(theta)), 0]
-v_pqw = np.sqrt(u/p)*[-np.sin(np.radians(theta)), (ecc+np.cos(np.radians(theta))), 0]
-R = np.array(
-    [(np.cos(np.radians(RAAN))*np.cos(np.radians(omega)) - np.sin(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), 
+r_pqw = np.array([r0*np.cos(np.radians(theta)), r0*np.sin(np.radians(theta)), 0])
+v_pqw = np.sqrt(u/p)*np.array([-np.sin(np.radians(theta)), (ecc+np.cos(np.radians(theta))), 0])
+R = np.array([[(np.cos(np.radians(RAAN))*np.cos(np.radians(omega)) - np.sin(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), 
     (-np.cos(np.radians(RAAN))*np.sin(np.radians(omega)) - np.sin(np.radians(RAAN))*np.cos(np.radians(omega))*np.cos(np.radians(i_el))), 
-    np.sin(np.radians(RAAN))*np.sin(np.radians(i_el))] 
+    np.sin(np.radians(RAAN))*np.sin(np.radians(i_el))], 
     [(np.sin(np.radians(RAAN))*np.cos(np.radians(omega)) + np.cos(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), 
     (-np.sin(np.radians(RAAN))*np.sin(np.radians(omega)) + np.cos(np.radians(RAAN))*np.cos(np.radians(omega))*np.cos(np.radians(i_el))), 
-    -np.cos(np.radians(RAAN))*np.sin(np.radians(i_el))]
-    [np.sin(np.radians(omega))*np.sin(np.radians(i_el)), np.cos(np.radians(omega))*np.sin(np.radians(i_el)), np.cos(np.radians(i_el))]
-    )
+    -np.cos(np.radians(RAAN))*np.sin(np.radians(i_el))],
+    [np.sin(np.radians(omega))*np.sin(np.radians(i_el)), np.cos(np.radians(omega))*np.sin(np.radians(i_el)), np.cos(np.radians(i_el))]])
 r_ijk = np.dot(R,r_pqw)
 v_ijk = np.dot(R,v_pqw)
+print("r_ijk: ", r_ijk)
+print("v_ijk: ", v_ijk)
