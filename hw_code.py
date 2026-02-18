@@ -5,28 +5,29 @@
 ## Problem 2: Determine the 6 orbital elements.
 # Find a, i, e, omega, w, theta
 import numpy as np
+import numpy.linalg as la
 print("Problem 2 program output")
 r = [2,0.5,1]
 v = [0.5,0.5,-0.5]
 # Calculate h
-h = cross(r,v)
-h0 = norm(h)
+h = np.cross(r,v)
+h0 = la.norm(h)
 k = [0,0,1]
-n = cross(k,h)
-n0 = norm(n)
+n = np.cross(k,h)
+n0 = la.norm(n)
 #u = 3.986*10^5
 u = 1
-v0 = norm(v)
-r0 = norm(r)
-evec = ((1/u)*((v0**2)-(u/r0))*r)-(v*dot(r,v))
-ecc = norm(evec)
+v0 = la.norm(v)
+r0 = la.norm(r)
+evec = ((1/u)*((v0**2)-(u/r0))*r)-(v*np.dot(r,v))
+ecc = la.norm(evec)
 p = (h0**2)/u
 a = p/(1-ecc**2)
-i_el = acosd(h[2]/h0)
-omega = acosd(n[0]/n0)
-w = acosd(dot(n,evec)/(n0*ecc))
+i_el = np.degrees(np.arccos(h[2]/h0))
+omega = np.degrees(np.arccos(n[0]/n0))
+w = np.degrees(np.arccos(np.dot(n,evec)/(n0*ecc)))
 w2 = 360-w
-theta = acosd(dot(evec,r)/(ecc*r0))
+theta = np.degrees(np.arccos(np.dot(evec,r)/(ecc*r0)))
 
 ## Problem 3: Getting r_ijk and v_ijk from 6 orbital elements. Using notation in Problem 3 for unit names.
 # Clear previous problem variables
@@ -46,18 +47,14 @@ r0 = p/(1+ecc*np.cos(np.radians(theta)))
 # Using verical vector notation
 r_pqw = [r0*np.cos(np.radians(theta)), r0*np.sin(np.radians(theta)), 0]
 v_pqw = np.sqrt(u/p)*[-np.sin(np.radians(theta)), (ecc+np.cos(np.radians(theta))), 0]
-R = [
-    (np.cos(np.radians(RAAN))*np.cos(np.radians(omega)) - np.sin(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), ...
-    (-np.cos(np.radians(RAAN))*np.sin(np.radians(omega)) - np.sin(np.radians(RAAN))*np.cos(np.radians(omega))*np.cos(np.radians(i_el))), ...
-    np.sin(np.radians(RAAN))*np.sin(np.radians(i_el));
-    
-    (np.sin(np.radians(RAAN))*np.cos(np.radians(omega)) + np.cos(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), ...
-    (-np.sin(np.radians(RAAN))*np.sin(np.radians(omega)) + np.cos(np.radians(RAAN))*np.cos(np.radians(omega))*np.cos(np.radians(i_el))), ...
-    -np.cos(np.radians(RAAN))*np.sin(np.radians(i_el));
-    
-    np.sin(np.radians(omega))*np.sin(np.radians(i_el)), ...
-    np.cos(np.radians(omega))*np.sin(np.radians(i_el)), ...
-    np.cos(np.radians(i_el))
-]
+R = np.array(
+    [(np.cos(np.radians(RAAN))*np.cos(np.radians(omega)) - np.sin(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), 
+    (-np.cos(np.radians(RAAN))*np.sin(np.radians(omega)) - np.sin(np.radians(RAAN))*np.cos(np.radians(omega))*np.cos(np.radians(i_el))), 
+    np.sin(np.radians(RAAN))*np.sin(np.radians(i_el))] 
+    [(np.sin(np.radians(RAAN))*np.cos(np.radians(omega)) + np.cos(np.radians(RAAN))*np.sin(np.radians(omega))*np.cos(np.radians(i_el))), 
+    (-np.sin(np.radians(RAAN))*np.sin(np.radians(omega)) + np.cos(np.radians(RAAN))*np.cos(np.radians(omega))*np.cos(np.radians(i_el))), 
+    -np.cos(np.radians(RAAN))*np.sin(np.radians(i_el))]
+    [np.sin(np.radians(omega))*np.sin(np.radians(i_el)), np.cos(np.radians(omega))*np.sin(np.radians(i_el)), np.cos(np.radians(i_el))]
+    )
 r_ijk = np.dot(R,r_pqw)
 v_ijk = np.dot(R,v_pqw)
