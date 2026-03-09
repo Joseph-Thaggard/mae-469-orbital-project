@@ -71,3 +71,4 @@ for object in sim:
 # Calculated at each cell given the current position
 # Equation of gravitation potential: -GM/r
 # Each object adds to the potential map
+
