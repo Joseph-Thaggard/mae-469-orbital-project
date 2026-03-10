@@ -1,0 +1,3 @@
+#### ReadMe for MAE-469 Orbital Project
+
+Developed for The University of Alabama in Huntville (UAH) MAE-469: Introduction to Astrodynamics final project. The project requests a model of the solar system where a spacecraft travels from Earth to Mars (burn #1), use Mars for a flyby, initiate another propulsive burn for an Earth flyby/gravity assist (burn #2), then arrive at Jupiter in an impact orbit.  
