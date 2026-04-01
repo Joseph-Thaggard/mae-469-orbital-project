@@ -55,6 +55,19 @@ Save bodies:
 Advance time:
 - t=t+dt
 
+In a bit more of a literal example:
+```python 
+state = sim.init(initial_state)
+sim.start()     #indicating some start/end conditions
+    sim.propagate(state)
+    sim.update(state)
+    sim.detect(state)
+    sim.action(state)
+    sim.fields(state)
+    sim.save(state)
+    sim.advance(state)
+sim.stop()
+```
 
 
 
