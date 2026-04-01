@@ -32,7 +32,9 @@ Update state:
 - Update positions
 - Update velocities
 Detect events:
-- Check for SOI interruptions 
+- Check for SOI:
+    - If within SOI, note within events
+    - Swap from NBody to Kepler for spacecraft propogation, with body as fixed
 - Check for burn time
 Update burn:
 - Instant:
@@ -42,11 +44,18 @@ Update burn:
     - Splice burn between timesteps if there's no easy division
     - Consider writing dt as smaller during high-interest periods (burns) to resolve accuracy
     - Continue each step within the burn duration or dV delivery
-- Adjust mass (if known) using Isp equation
+- Adjust spacecraft mass (if known) using Isp equation
+Add fields:
+- Potential field
+- Trajectory plot (with SOI interruptions)
 Save bodies:
 - Write current state to a "state.json" file so it's not just saved internally
 - Write lines such as position/vel of all bodies to a .csv 
 - Can write to body-specific files like sun_save.csv
+Advance time:
+- t=t+dt
+
+
 
 
 
