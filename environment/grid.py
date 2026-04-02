@@ -1,4 +1,6 @@
 import numpy as np
+import numpy.linalg as la
+import diags as d
 class SpaceGrid: 
     def __init__(self,nx,ny,nz,spacing): 
         self.nx=nx
@@ -13,4 +15,7 @@ class SpaceGrid:
         for i in range(self.nx):
             for j in range(self.ny):
                 for k in range(self.nz):
-                    self.potential[i,j,k]=potential.potential_nbody(bodies)
+                    # Presumes scalar at each grid point, remove np.norm for vector use later
+                    self.potential[i,j,k]=la.norm(potential.potential_grid(self,np.array([i,j,k]), bodies))
+                    d.log(f"Computed potential at grid point ({i}, {j}, {k}): {self.potential[i,j,k]}")
+        return self.potential
