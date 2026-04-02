@@ -72,3 +72,36 @@ for object in sim:
 # Equation of gravitation potential: -GM/r
 # Each object adds to the potential map
 
+
+## Orbital Parameters to ijkdef orbital_to_ijk(a, e, i, Ob, os, theta, mu):
+def orbital_to_ijk(a, e, i, Ob, os, theta, mu):
+    #deg to rad
+    Ob = deg2rad(Ob)
+    os = deg2rad(os)
+    theta = deg2rad(theta)
+    i = deg2rad(i)
+    
+    #PQW
+    p = a*(1-e**2)
+    r_mag = p/(1+e*np.cos(theta))
+    
+    r_vect = r_mag * np.array([np.cos(theta), np.sin(theta), 0])
+    v_vect = np.sqrt(mu/p)* np.array([-np.sin(theta), e+np.cos(theta), 0])
+    
+    #convert to ijk
+    R11 = np.cos(Ob)*np.cos(os)-np.sin(Ob)*np.sin(os)*np.cos(i)
+    R12 = -np.cos(Ob)*np.sin(os)-np.sin(Ob)*np.cos(os)*np.cos(i)
+    R13 = np.sin(Ob)*np.sin(os)
+    R21 = -np.sin(Ob)*np.cos(os)+np.cos(Ob)*np.sin(os)*np.cos(i)
+    R22 = -np.sin(Ob)*np.sin(os)+np.cos(Ob)*np.cos(os)*np.cos(i)
+    R23 = -np.cos(Ob)*np.sin(i)
+    R31 = np.sin(os)*np.sin(i)
+    R32 = np.cos(os)*np.sin(i)
+    R33 = np.cos(i)
+    
+    R = np.array([[R11,R12,R13],[ R21, R22, R23], [R31, R32, R33]])
+    
+    r_ijk = R @ r_vect
+    v_ijk = R @ v_vect
+    
+    return (r_ijk, v_ijk)
