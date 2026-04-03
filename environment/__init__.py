@@ -1,3 +1,3 @@
-from .grid import SpaceGrid
+from .grid import Grid
 
-__all__ = ["SpaceGrid"]
+__all__ = ["Grid"]

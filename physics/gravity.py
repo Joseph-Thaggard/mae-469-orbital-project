@@ -4,11 +4,11 @@ import numpy.linalg as la
 def gravity_2body(bodies):
     G = 6.67430e-11  # Gravitational constant in m^3 kg^-1 s^-2
     a = np.zeros_like(bodies.positions)  # Initialize acceleration array
-    for i in range(1, len(bodies)):
-        ri = bodies.positions[i] - bodies.positions[0]  # Vector from the central body to the current body
-        M0 = bodies.masses[0]  # Mass of the central body
-        a[i] += G*M0*ri/(la.norm(ri)**2)
-    
+    for body in bodies:
+        ri = body.position - bodies[0].position  # Vector from the central body to the current body
+        M0 = bodies[0].mass  # Mass of the central body
+        a[body] += G*M0*ri/(la.norm(ri)**2)
+
     return a
 
 def gravity_nbody(bodies):

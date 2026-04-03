@@ -32,11 +32,16 @@ def potential_nbody(bodies):
 
 def potential_grid(grid,pos, bodies):
     G = 6.67430e-11  # Gravitational constant in m^3 kg^-1 s^-2
-    point = np.array([pos[0]*grid.spacing, pos[1]*grid.spacing, pos[2]*grid.spacing])  # Position of the grid point
+    point = np.array([
+        grid.geometry[0][0] + pos[0]*grid.spacing,
+        grid.geometry[1][0] + pos[1]*grid.spacing,
+        grid.geometry[2][0] + pos[2]*grid.spacing
+    ])  # Physical position of the grid point
     V = 0  # Initialize potential at this grid point
     for body in bodies:
-        if np.all(point-body.position == 0):
-            d.log(f"Warning: Grid point coincides with the position of {body.name}. Skipping potential calculation to avoid singularity.")
+        if np.all(point-body.position <= body.radius):
+            d.log(f"Warning: Grid point coincides within the size of {body.name}. Assigning to zero.")
+            V -= 0  # Assign zero potential if the grid point coincides with the body's position
             continue
         r = point - body.position  # Vector from the body to the grid point
         V -= G*body.mass/la.norm(r)  # Potential contribution from this body
