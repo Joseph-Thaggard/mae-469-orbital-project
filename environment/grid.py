@@ -14,7 +14,7 @@ class Grid:
     def place_bodies(self,bodies):
         for body in bodies:
             body.assign_grid_properties(self)
-            print(f"Placing {body.name} at grid index {body.grid_index} corresponding to position {body.grid_position}")
+            #print(f"Placing {body.name} at grid index {body.grid_index} corresponding to position {body.grid_position}")
             # Check if the body index is within the grid bounds
             if np.any(body.grid_index < 0) or np.any(body.grid_index >= [self.nx, self.ny, self.nz]):
                 print(f"Warning: {body.name} is out of grid bounds at index {body.grid_index}. Skipping placement.")
