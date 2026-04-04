@@ -1,0 +1,5 @@
+Orbit log started
+Bodies List: Sun, Earth, Mars
+Body Name, Apoapsis (m), Periapsis (m), Semi-Major Axis (m), Eccentricity
+Earth, 1.62e+11, 1.39e+11, 1.50e+11, 0.0770
+Mars, 2.49e+11, 2.08e+11, 2.29e+11, 0.0908

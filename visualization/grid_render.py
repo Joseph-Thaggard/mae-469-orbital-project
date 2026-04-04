@@ -1,9 +1,12 @@
 import atexit
+from collections import deque
 import numpy as np
 import numpy.linalg as la
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d  # noqa: F401 — registers 3D projection
 from environment.grid import Grid
+
+TRAIL_MAX = 200
 
 def _keep_open():
     if _fig is not None:
@@ -37,9 +40,9 @@ def render_grid(grid, bodies):
         color = sc.get_facecolor()[0]
         _ax.text(ix, iy, iz, f"  {body.name}", fontsize=8)
 
-        # Store trail entry
+        # Store trail entry (deque auto-drops oldest when full)
         if body.name not in _trail:
-            _trail[body.name] = {'indices': [], 'color': color}
+            _trail[body.name] = {'indices': deque(maxlen=TRAIL_MAX), 'color': color}
         _trail[body.name]['indices'].append([ix, iy, iz])
         _trail[body.name]['color'] = color  # update in case color assignment shifts
 

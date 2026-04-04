@@ -15,12 +15,11 @@ import propagators as prop
 import visualization as v
 import diags as d
 
-dt = 100000
+dt = 1000000
 
 sun = bodies.Body('Sun', 1.989e30, 696340e3, np.array([0,0,0]), np.array([0,0,0]))
 earth = bodies.Body('Earth', 5.972e24, 6371e3, np.array([1.496e11, 0, 0]), np.array([0, 29780, 0]))
 mars = bodies.Body('Mars', 0.64171e24, 3389.5e3, np.array([2.279e11, 0, 0]), np.array([0, 24077, 0]))
-d.log_start()
 bodies_list = [sun, earth, mars]
 
 # Input list, currently not used
@@ -45,13 +44,14 @@ grid = environment.Grid(ncell, spacing, geometry)
 grid.place_bodies(bodies_list)
 #p.gravity_2body(bodies_list)
 #dG = Grid.compute_potential(grid,bodies_list)
-print(f"Potential grid shape: {grid.potential.shape}")
+#print(f"Potential grid shape: {grid.potential.shape}")
 for i in range(1,1000000):
     v.render_grid(grid, bodies_list)
     p.gravity_2body(bodies_list)
     prop.propogate_velocity(bodies_list, dt)
     prop.propogate_position(bodies_list, dt)
     v.render_grid(grid, bodies_list)
+    d.log_orbits(bodies_list)
 
 # Heatmap of gravitational potential at z=0 slice
 #z_slice = dG[:, :, 0]  # shape (nx, ny)
