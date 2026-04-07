@@ -1,10 +1,11 @@
+import numpy as np
 import numpy.linalg as la
+
+G = 6.67430e-11  # Gravitational constant in m^3 kg^-1 s^-2
 
 def gravity_2body(bodies):
     """Compute gravitational acceleration on each body due to bodies[0] (the central body, e.g. Sun).
-    Resets acceleration on all bodies before computing."""
-    import numpy as np
-    G = 6.67430e-11  # Gravitational constant in m^3 kg^-1 s^-2
+    Resets acceleration on all bodies before computing. Sun is treated as fixed."""
     central = bodies[0]
     for body in bodies:
         body.acceleration = np.zeros(3)  # reset each timestep
@@ -14,10 +15,8 @@ def gravity_2body(bodies):
         body.acceleration -= G * central.mass * r / r_mag**3  # points toward central body
 
 def gravity_nbody(bodies):
-    """Compute gravitational acceleration on every body due to all other bodies.
-    Resets acceleration on all bodies before computing."""
-    import numpy as np
-    G = 6.67430e-11  # Gravitational constant in m^3 kg^-1 s^-2
+    """Compute gravitational acceleration on every body due to all other bodies (full n-body).
+    Resets acceleration on all bodies before computing. All bodies including bodies[0] will move."""
     for body in bodies:
         body.acceleration = np.zeros(3)  # reset each timestep
     for i in range(len(bodies)):

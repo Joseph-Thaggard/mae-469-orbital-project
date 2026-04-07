@@ -11,16 +11,19 @@ import environment
 from environment.grid import Grid
 import mission
 import physics as p
-import propagators as prop
 import visualization as v
 import diags as d
+import mission as m
 
-dt = 1000000
+
+dt = 1e6
+max_steps = int(1e8)
 
 sun = bodies.Body('Sun', 1.989e30, 696340e3, np.array([0,0,0]), np.array([0,0,0]))
 earth = bodies.Body('Earth', 5.972e24, 6371e3, np.array([1.496e11, 0, 0]), np.array([0, 29780, 0]))
 mars = bodies.Body('Mars', 0.64171e24, 3389.5e3, np.array([2.279e11, 0, 0]), np.array([0, 24077, 0]))
-bodies_list = [sun, earth, mars]
+ship = bodies.Spacecraft.in_orbit('Spaceship', 1000, 10, earth, 400e3, extra_v=0)  # circular LEO; set extra_v > 3176 to escape Earth SOI
+bodies_list = [sun, earth, mars, ship]
 
 # Input list, currently not used
 xmin = -5e11  # minimum x coordinate in meters
@@ -42,29 +45,20 @@ ncell_z = 100  # number of grid cells in z direction
 ncell = np.array([ncell_x, ncell_y, ncell_z])   # number of grid cells in each direction (sim resolution)
 grid = environment.Grid(ncell, spacing, geometry)
 grid.place_bodies(bodies_list)
-#p.gravity_2body(bodies_list)
-#dG = Grid.compute_potential(grid,bodies_list)
-#print(f"Potential grid shape: {grid.potential.shape}")
-for i in range(1,1000000):
-    v.render_grid(grid, bodies_list)
-    p.gravity_2body(bodies_list)
-    prop.propogate_velocity(bodies_list, dt)
-    prop.propogate_position(bodies_list, dt)
-    v.render_grid(grid, bodies_list)
-    d.log_orbits(bodies_list)
+spacecraft_list = [ship]
+m.instant_burn(ship, np.array([0, 0, 2000]))  # example burn: +500 m/s in tangential direction for 1e6 s (should be ~3333 m/s actual delta-v)
+# dt_sub = dt / N_SOI_SUBSTEPS when inside an SOI (100 s for dt=1e6, n=10000)
+# SOI_RENDER_EVERY: render SOI plot every N sub-steps (~once per LEO orbit at 59)
+N_SOI_SUBSTEPS  = 10000
+SOI_RENDER_EVERY = 10
 
-# Heatmap of gravitational potential at z=0 slice
-#z_slice = dG[:, :, 0]  # shape (nx, ny)
-#fig, ax = plt.subplots()
-#c = ax.pcolormesh(z_slice.T, cmap='coolwarm', norm=matplotlib.colors.LogNorm())
-#fig.colorbar(c, ax=ax, label='Gravitational Potential (J/kg)')
-#ax.set_xlabel('X grid index')
-#ax.set_ylabel('Y grid index')
-#ax.set_title('Gravitational Potential at z=0')
-#plt.tight_layout()
-#plt.show()
+for i in range(1,max_steps):
+    t_sim = i * dt
+    soi_map = p.propagate_soi(bodies_list, spacecraft_list, grid, dt,
+                               n_substeps=N_SOI_SUBSTEPS,
+                               render_every=SOI_RENDER_EVERY,
+                               soi_render_fn=v.render_body_frame)
+    v.render_grid(grid, bodies_list)
+    d.log_orbits(bodies_list, soi_map)
 
-# Print all attributes of the sun object
-#attrs = vars(sun)
-#print(', '.join("%s: %s" % item for item in attrs.items()))
 
