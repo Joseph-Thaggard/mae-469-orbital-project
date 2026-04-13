@@ -1,0 +1,557 @@
+MAE 469 / INTRO TO ASTRODYNAMICS
+SPRING 2026 — INTERPLANETARY TRAJECTORY PROJECT
+Generated: 2026-04-13 04:19 UTC
+
+Team Member(s): [Insert names]
+
+==============================================================================
+  SECTION 1 — MISSION OVERVIEW
+==============================================================================
+
+  Mission Concept: Earth-Mars-Earth-Jupiter (EMEJ)
+  Modeled after the Europa Clipper (2024) trajectory.
+
+  The spacecraft departs Earth, performs a free gravity assist at Mars, fires
+  a Deep Space Maneuver (DSM) at a heliocentric point between Mars and Earth,
+  performs a second free gravity assist at Earth, then coasts to Jupiter.
+
+  Three propulsive delta-v maneuvers:
+    Dv1 — Earth departure burn (escape from 500 km LEO)
+    Dv2 — Deep Space Maneuver (somewhere on the Mars-Earth leg)
+    Dv3 — Jupiter orbit insertion (into 10,000 km altitude circular orbit)
+
+  Free flybys (zero propulsion):
+    Mars flyby  — hyperbolic turn redirects spacecraft toward DSM point
+    Earth flyby — hyperbolic turn redirects spacecraft toward Jupiter
+
+  Key assumptions:
+    - Patched conic / two-body approximation (Sun-centered between SOIs)
+    - Circular parking orbits at Earth (500 km) and Jupiter (10,000 km)
+    - All circular orbits coplanar with hyperbolic arrivals (no plane change Dv)
+    - Periapsis of each hyperbolic orbit equals parking orbit radius
+
+
+==============================================================================
+  SECTION 2 — TASK 1: PLANETARY STATES ON DEC 25, 2026 AT 23:12 UTC
+==============================================================================
+
+  Method: Keplerian propagation using universal variable (Battin/Curtis §3.7).
+  All planets propagated from J2000 epoch (Jan 1, 2000 11:58:56 UTC) to the
+  specified date using kepler_propagate(r0, v0, dt, mu_sun).
+
+  J2000 orbital elements sourced from the project specification table.
+  Reference frame: heliocentric ecliptic J2000 (x toward vernal equinox).
+
+  Reference date: December 25, 2026 at 23:12 UTC
+  Seconds from J2000: 851,512,384.0 s  (9,855.47 days)
+
+  Planet      theta (deg)   r| (AU)     rx (AU)     ry (AU)     rz (AU)   vx (km/s)   vy (km/s)   vz (km/s)   v| (km/s)
+  ------------------------------------------------------------------------------------------------------------------------
+  Mercury        182.7821   0.46656    -0.08048    -0.45858    -0.03007    38.20783    -5.94671    -3.99268    38.87342
+  Venus          359.5774   0.71843    -0.47138     0.54106     0.03460   -26.52926   -23.19259     1.21440    35.25865
+  Earth          350.9250   0.98349    -0.06642     0.98125     0.00000   -30.20596    -2.12321    -0.00001    30.28049
+  Mars           147.0044   1.63876    -0.89299     1.37314     0.05073   -19.39285   -11.14936     0.24344    22.37074
+  Jupiter        120.9800   5.32379    -3.81161     3.71611     0.06987    -9.28291    -8.74905     0.24446    12.75845
+  Saturn         285.4732   9.37368     8.91166     2.87833    -0.40425    -3.49250     9.16862    -0.02126     9.81130
+  Uranus         249.2861  19.47345     9.66254    16.90699    -0.06321    -5.95928     3.06025     0.08824     6.69970
+  Neptune        319.1500  29.87273    29.78706     2.13943    -0.73069    -0.42453     5.44977    -0.10224     5.46724
+  Pluto           73.5791  34.60367    15.87202   -30.72124    -1.30340     4.95958     1.31355    -1.57526     5.36696
+
+  Notes:
+    - theta = true anomaly at specified epoch (deg)
+    - r| = heliocentric distance (AU)
+    - All vectors in heliocentric ecliptic J2000 frame
+    - Pluto included per project specification
+
+==============================================================================
+  SECTION 3 — TASK 2: EMEJ TRAJECTORY
+==============================================================================
+
+──────────────────────────────────────────────────────────────────────────────
+  3.1  Body States at Mission Event Epochs
+──────────────────────────────────────────────────────────────────────────────
+
+  Propagation method: Kepler universal variable (Curtis Algorithm 3.4).
+  Each planet state propagated independently from J2000 initial elements.
+
+  Selected trajectory window:
+    Launch (Earth dep.):  2027-01-15   (2027-01-15)
+    Mars flyby:           2027-10-02   TOF1 = 260.0 days
+    Earth flyby:          2028-11-25   TOF2 = 420.0 days after Mars
+    Jupiter arrival:      2031-11-30   TOF3 = 1100.0 days after Earth
+    Total mission:        1780.0 days  (4.87 years)
+
+  Earth at departure       [2027-01-15 00:00 UTC]:
+    r = [  -0.404572,     0.896550,     0.000001] AU    |r| = 0.983606 AU
+    v = [ -27.637451,   -12.364134,    -0.000015] km/s  |v| = 30.277063 km/s
+
+  Mars at flyby            [2027-10-02 00:00 UTC]:
+    r = [  -0.434569,    -1.428485,    -0.019238] AU    |r| = 1.493248 AU
+    v = [  24.098417,    -4.973128,    -0.696957] km/s  |v| = 24.616081 km/s
+
+  Earth at return flyby    [2028-11-25 00:00 UTC]:
+    r = [   0.449532,     0.878791,     0.000001] AU    |r| = 0.987093 AU
+    v = [ -27.005589,    13.454615,     0.000007] km/s  |v| = 30.171650 km/s
+
+  Jupiter at arrival       [2031-11-30 00:00 UTC]:
+    r = [   0.444245,    -5.215776,     0.011821] AU    |r| = 5.234674 AU
+    v = [  12.861000,     1.720228,    -0.295268] km/s  |v| = 12.978893 km/s
+
+──────────────────────────────────────────────────────────────────────────────
+  3.2  Leg 1 Lambert Solution: Earth -> Mars
+──────────────────────────────────────────────────────────────────────────────
+
+  Method: Universal variable Lambert solver (Curtis Algorithm 5.2).
+  Solves for the transfer orbit connecting two position vectors r1, r2
+  in a specified time-of-flight (TOF).
+
+  Inputs:
+    r1 = Earth position at departure   2027-01-15
+    r2 = Mars position at flyby        2027-10-02
+    TOF1 = 260.0 days = 22464000.0 s
+    mu_sun = 1.327124e+20 m^3/s^2
+
+  SC velocity at Earth departure:
+    r = [  -0.404572,     0.896550,     0.000001] AU    |r| = 0.983606 AU
+    v = [ -32.276751,    -5.052924,    -0.615987] km/s  |v| = 32.675681 km/s
+
+  SC velocity at Mars arrival:
+    r = [  -0.434569,    -1.428485,    -0.019238] AU    |r| = 1.493248 AU
+    v = [  21.196964,    -1.616405,     0.364837] km/s  |v| = 21.261636 km/s
+
+  Hyperbolic excess velocity at Earth departure:
+    v_inf_dep = [  -4.63930,    7.31121,   -0.61597] km/s
+    |v_inf_dep| = 8.68080 km/s
+
+  Hyperbolic excess velocity at Mars arrival (v_inf_in):
+    v_inf_in_mars = [  -2.90145,    3.35672,    1.06179] km/s
+    |v_inf_in_mars| = 4.56217 km/s
+
+──────────────────────────────────────────────────────────────────────────────
+  3.3  Leg 3 Lambert Solution: Earth -> Jupiter
+──────────────────────────────────────────────────────────────────────────────
+
+  The Earth-to-Jupiter leg determines the required post-Earth-flyby
+  spacecraft velocity. This is computed first (backward planning) so the
+  DSM optimizer knows what velocity the spacecraft must have at Earth.
+
+  Inputs:
+    r1 = Earth position at flyby       2028-11-25
+    r2 = Jupiter position at arrival   2031-11-30
+    TOF3 = 1100.0 days = 95040000.0 s
+
+  SC velocity departing Earth (post-flyby):
+    r = [   0.449532,     0.878791,     0.000001] AU    |r| = 0.987093 AU
+    v = [ -37.452044,    10.419306,    -0.162553] km/s  |v| = 38.874721 km/s
+
+  SC velocity at Jupiter arrival:
+    r = [   0.444245,    -5.215776,     0.011821] AU    |r| = 5.234674 AU
+    v = [   7.065419,     1.676255,     0.023591] km/s  |v| = 7.261579 km/s
+
+  Post-Earth-flyby hyperbolic excess velocity (v_inf_out):
+    v_inf_out_earth = [ -10.44645,   -3.03531,   -0.16256] km/s
+    |v_inf_out_earth| = 10.87970 km/s
+
+  Jupiter arrival hyperbolic excess velocity:
+    v_inf_arr_jup = [  -5.79558,   -0.04397,    0.31886] km/s
+    |v_inf_arr_jup| = 5.80451 km/s
+
+──────────────────────────────────────────────────────────────────────────────
+  3.4  Mars Free Flyby Geometry (pre-DSM)
+──────────────────────────────────────────────────────────────────────────────
+
+  A free (unpowered) gravity assist turns the spacecraft's v_inf vector
+  without changing its magnitude. The maximum achievable turn angle is:
+
+    delta_max = 2 * arcsin(1 / ecc_hyp)
+    ecc_hyp   = 1 + rp * v_inf^2 / mu_body
+
+  where rp is the periapsis radius of the hyperbolic flyby trajectory.
+
+  Mars flyby parameters:
+    Minimum flyby altitude:    200 km
+    Mars radius:               3389.5 km
+    Periapsis radius (rp_min): 3589.5 km from Mars center
+    mu_Mars:                   4.282965e+13 m^3/s^2
+    |v_inf_in|:                4.56217 km/s
+
+  Computed flyby hyperbolic orbit:
+    Eccentricity (ecc_hyp):    2.74435
+    Max turn angle (delta_max):42.7395 deg
+
+
+──────────────────────────────────────────────────────────────────────────────
+  3.5  Deep Space Maneuver (DSM) Optimization
+──────────────────────────────────────────────────────────────────────────────
+
+  The DSM optimizer searches for the heliocentric location and timing of
+  a propulsive burn on the Mars-to-Earth leg that minimizes Dv2 while
+  satisfying the Earth flyby turn angle feasibility constraint.
+
+  Free parameters:
+    tau   — fraction of TOF2 at which the DSM fires  (0 < tau < 1)
+              => t_DSM = t_Mars + tau * TOF2
+    phi   — azimuth angle of Mars flyby exit direction (0 to 2*pi)
+              => controls which way the Mars flyby turns the spacecraft
+    delta — fraction of delta_max turn used at Mars   (0 to 1)
+              => delta_rad = delta * delta_max_mars
+
+  Optimization algorithm:
+    1. Grid search over (tau=10, phi=12, delta=4) = 480 combinations
+    2. Nelder-Mead refinement from best grid point
+    Cost = Dv_DSM + lam_earth * speed_mismatch + lam_turn * turn_penalty
+    turn_penalty = max(0, delta_turn - delta_max_earth) * 1e4
+
+  Constraints enforced:
+    - Earth flyby turn angle must not exceed delta_max at rp_min
+    - Speed mismatch |v_inf_in_earth| ~ |v_inf_out_earth| (free flyby)
+    - rp_required >= rp_min_earth = 6671.0 km
+
+  Running optimizer...
+
+  Optimization result:
+    tau   (timing fraction):       0.020031
+    phi   (exit azimuth):          144.8465 deg
+    delta (fraction of delta_max): 0.999911
+    delta used:                    42.7357 deg  (max = 42.7395 deg)
+    Optimizer cost:                12319.118929
+
+  DSM epoch:
+    t_DSM = 2027-10-10 09:54 UTC
+    TOF2a = 8.41 days after Mars flyby
+    TOF2b = 411.59 days after DSM to Earth flyby
+
+  DSM heliocentric location:
+    r = [  -0.333246,    -1.445089,    -0.008719] AU    |r| = 1.483041 AU
+    v = [  21.093699,    -2.472355,     2.172722] km/s  |v| = 21.348944 km/s
+    |r_DSM| = 1.48304 AU from Sun
+
+  DSM burn vector:
+    Dv2 = [  -2.46028,  -11.75410,   -2.72916] km/s
+    |Dv2| = 12.31504 km/s
+
+──────────────────────────────────────────────────────────────────────────────
+  3.6  Mars Gravity Assist — Free Flyby Detail
+──────────────────────────────────────────────────────────────────────────────
+
+  The Mars free flyby applies a Rodrigues rotation to v_inf_in in the plane
+  perpendicular to v_inf_in, rotating by delta_rad toward direction phi.
+  Since no propulsion is used, |v_inf_out| = |v_inf_in| exactly.
+
+  Pre-flyby state (SC arriving at Mars):
+    Heliocentric SC velocity at Mars arrival:
+      v_sc_in = [  21.19696,   -1.61641,    0.36484] km/s
+    v_inf_in  = [  -2.90145,    3.35672,    1.06179] km/s
+    |v_inf_in| = 4.56217 km/s
+
+  Flyby hyperbolic orbit:
+    Periapsis radius (rp):    3589.5 km  (altitude = 200 km)
+    Eccentricity (ecc_hyp):   2.74435
+    Turn angle applied:       42.7357 deg
+    Maximum possible:         42.7395 deg
+    Fraction of max used:     0.9999
+
+  Post-flyby state (SC departing Mars):
+    v_inf_out = [  -3.50670,    0.62118,    2.85142] km/s
+    |v_inf_out| = 4.56217 km/s  (should equal |v_inf_in| = 4.56217 km/s)
+    Speed conservation check: |Dv| = 0.00e+00 km/s  (< 1e-6 OK)
+
+    SC heliocentric departure velocity post-flyby:
+      v_sc_out = [  20.59171,   -4.35195,    2.15446] km/s
+
+──────────────────────────────────────────────────────────────────────────────
+  3.7  Earth Gravity Assist — Free Flyby Detail
+──────────────────────────────────────────────────────────────────────────────
+
+  The Earth flyby is also free (unpowered). The DSM was optimized to deliver
+  the spacecraft to Earth with the correct v_inf direction such that the
+  hyperbolic turn naturally redirects it toward Jupiter.
+
+  Earth flyby constraint parameters:
+    Minimum altitude:          300 km
+    Earth radius:              6371.0 km
+    Minimum periapsis (rp_min):6671.0 km from Earth center
+    mu_Earth:                  3.985892e+14 m^3/s^2
+
+  SC arrival at Earth (post-DSM coast):
+    SC arriving at Earth:
+    r = [   0.449532,     0.878791,     0.000001] AU    |r| = 0.987093 AU
+    v = [ -33.574564,     4.811326,     0.773867] km/s  |v| = 33.926378 km/s
+
+  v_inf_in  = [  -6.56898,   -8.64329,    0.77386] km/s
+  |v_inf_in| = 10.88378 km/s
+
+  Post-flyby (required to reach Jupiter):
+  v_inf_out = [ -10.44645,   -3.03531,   -0.16256] km/s
+  |v_inf_out| = 10.87970 km/s
+  Speed mismatch: 0.0041 km/s  (free flyby requires ~0)
+
+  Earth flyby hyperbolic orbit:
+    Eccentricity (ecc_hyp):        2.98255
+    Max achievable turn (delta_max):39.1795 deg
+    Required turn angle (delta):    36.8684 deg
+    Required periapsis radius:      7276.2 km
+    Feasibility:                    FEASIBLE
+    Periapsis check:                OK (above minimum)
+
+──────────────────────────────────────────────────────────────────────────────
+  3.8  Transfer Orbit Classical Elements (Section 4d)
+──────────────────────────────────────────────────────────────────────────────
+
+  Orbital elements computed from (r, v) via Curtis rv_to_elements().
+  All angles in degrees. Semi-major axis in AU.
+  Reference: heliocentric ecliptic J2000.
+
+  Element definitions:
+    a     — semi-major axis (AU)
+    e     — eccentricity
+    i     — inclination to ecliptic (deg)
+    RAAN  — right ascension of ascending node, Omega (deg)
+    argp  — argument of periapsis, omega (deg)
+    nu    — true anomaly at epoch (deg)
+    P     — orbital period (years)
+
+  Leg 1: Earth -> Mars  (Lambert arc, TOF = 260.0 d)
+    a     = 1.205127 AU
+    e     = 0.319085
+    i     = 1.12035 deg
+    RAAN  = 294.28956 deg
+    argp  = 108.35041 deg
+    nu    = 71.64751 deg  (at departure epoch)
+    P     = 1.3230 years  (full orbit period)
+
+  Leg 2a: Mars -> DSM   (Keplerian coast, TOF = 8.41 d)
+    a     = 1.197873 AU
+    e     = 0.260846
+    i     = 5.84923 deg
+    RAAN  = 260.30443 deg
+    argp  = 158.10761 deg
+    nu    = 194.62989 deg  (at departure epoch)
+    P     = 1.3111 years  (full orbit period)
+
+  Leg 2b: DSM -> Earth  (Keplerian coast, TOF = 411.59 d)
+    a     = 1.372292 AU
+    e     = 0.419229
+    i     = 1.38181 deg
+    RAAN  = 62.90669 deg
+    argp  = 69.63613 deg
+    nu    = 124.47540 deg  (at departure epoch)
+    P     = 1.6076 years  (full orbit period)
+
+  Leg 3: Earth -> Jupiter  (Lambert arc, TOF = 1100.0 d)
+    a     = 3.099544 AU
+    e     = 0.697093
+    i     = 0.24452 deg
+    RAAN  = 242.91995 deg
+    argp  = 208.21693 deg
+    nu    = 331.77179 deg  (at departure epoch)
+    P     = 5.4570 years  (full orbit period)
+
+
+──────────────────────────────────────────────────────────────────────────────
+  3.9  Heliocentric Position and Velocity at All Events (Section 4c)
+──────────────────────────────────────────────────────────────────────────────
+
+  Event                                         rx(AU)      ry(AU)      rz(AU)    vx(km/s)    vy(km/s)    vz(km/s)    r|(AU)   v|(km/s)
+  ----------------------------------------------------------------------------------------------------------------------------------
+  Earth at departure                          -0.40457     0.89655     0.00000   -27.63745   -12.36413    -0.00002   0.98361   30.27706
+  SC at departure                             -0.40457     0.89655     0.00000   -32.27675    -5.05292    -0.61599   0.98361   32.67568
+  Mars at flyby                               -0.43457    -1.42848    -0.01924    24.09842    -4.97313    -0.69696   1.49325   24.61608
+  SC arrival at Mars                          -0.43457    -1.42848    -0.01924    21.19696    -1.61641     0.36484   1.49325   21.26164
+  SC departure Mars (post-flyby)              -0.43457    -1.42848    -0.01924    20.59171    -4.35195     2.15446   1.49325   21.15655
+  DSM location [2027-10-10]                   -0.33325    -1.44509    -0.00872    21.09370    -2.47235     2.17272   1.48304   21.34894
+  SC pre-DSM burn (arriving)                  -0.33325    -1.44509    -0.00872    21.09370    -2.47235     2.17272   1.48304   21.34894
+  SC post-DSM burn (departing)                -0.33325    -1.44509    -0.00872    18.63342   -14.22645    -0.55644   1.48304   23.45007
+  Earth at return flyby                        0.44953     0.87879     0.00000   -27.00559    13.45461     0.00001   0.98709   30.17165
+  SC arrival at Earth (post-DSM coast)         0.44953     0.87879     0.00000   -33.57456     4.81133     0.77387   0.98709   33.92638
+  SC departure Earth (post-flyby)              0.44953     0.87879     0.00000   -37.45204    10.41931    -0.16255   0.98709   38.87472
+  Jupiter at arrival                           0.44425    -5.21578     0.01182    12.86100     1.72023    -0.29527   5.23467   12.97889
+  SC at Jupiter arrival                        0.44425    -5.21578     0.01182     7.06542     1.67626     0.02359   5.23467    7.26158
+
+──────────────────────────────────────────────────────────────────────────────
+  3.10  Time-of-Flight Summary (Section 4f)
+──────────────────────────────────────────────────────────────────────────────
+
+  Leg                                       Start date      End date          TOF (days)   TOF (years)
+  ----------------------------------------------------------------------------------------------------
+  Leg 1:  Earth  -> Mars   (Lambert)        2027-01-15      2027-10-02            260.00        0.7118
+  Leg 2a: Mars   -> DSM    (Keplerian)      2027-10-02      2027-10-10              8.41        0.0230
+  Leg 2b: DSM    -> Earth  (Keplerian)      2027-10-10      2028-11-25            411.59        1.1269
+  Leg 2:  Mars   -> Earth  (total)          2027-10-02      2028-11-25            420.00        1.1499
+  Leg 3:  Earth  -> Jupiter (Lambert)       2028-11-25      2031-11-30           1100.00        3.0116
+  TOTAL MISSION                             2027-01-15      2031-11-30           1780.00        4.8734
+
+──────────────────────────────────────────────────────────────────────────────
+  3.11  Delta-v Budget (Section 4g)
+──────────────────────────────────────────────────────────────────────────────
+
+  Dv1 — Earth Departure Burn (from 500 km altitude LEO)
+  ────────────────────────────────────────────────────────────
+  Method: Hyperbolic periapsis burn from circular parking orbit.
+    Dv1 = v_hyp - v_circ
+    v_hyp = sqrt(v_inf^2 + 2*mu_Earth / rp)
+    v_circ = sqrt(mu_Earth / rp)
+
+    Parking orbit radius:  rp = 6871.0 km
+    v_circ (LEO):          7.61645 km/s
+    |v_inf_dep|:           8.68080 km/s
+    v_hyp at periapsis:    13.83391 km/s
+    Dv1:                   6.21746 km/s
+
+  Dv2 — Deep Space Maneuver (at 2027-10-10, 1.4830 AU from Sun)
+  ────────────────────────────────────────────────────────────
+  Method: Optimal heliocentric impulsive burn found by grid search + Nelder-Mead.
+  Burn vector: [  -2.46028,  -11.75410,   -2.72916] km/s
+    Dv2:       12.31504 km/s
+
+  Dv3 — Jupiter Orbit Insertion (into 10000 km altitude circular orbit)
+  ────────────────────────────────────────────────────────────
+  Method: Hyperbolic periapsis burn, same form as Dv1.
+    Dv3 = v_hyp_jup - v_circ_jup
+
+    Parking orbit radius:  rp = 81492.0 km
+    v_circ (Jupiter):      39.42698 km/s
+    |v_inf_arr_jup|:       5.80451 km/s
+    v_hyp at periapsis:    56.05948 km/s
+    Dv3:                   16.63250 km/s
+
+  ============================================================
+  Burn                               Dv (km/s)
+  --------------------------------------------
+  Dv1 — Earth departure                6.21746
+  Dv2 — Deep Space Maneuver           12.31504
+  Dv3 — Jupiter orbit insertion       16.63250
+  --------------------------------------------
+  TOTAL MISSION Dv                    35.16500
+  ============================================================
+
+──────────────────────────────────────────────────────────────────────────────
+  3.12  Lambert Solution Validation (Miss Distances)
+──────────────────────────────────────────────────────────────────────────────
+
+  Each Lambert arc is validated by propagating the initial state forward
+  by the full TOF and measuring the miss distance to the intended target.
+  Miss distances should be < 1 m for a valid solution.
+
+  Leg                                Miss distance (m)                Status
+  ----------------------------------------------------------------------------
+  Leg 1  Earth -> Mars                      1.3272e+00   WARNING: large miss
+  Leg 2a Mars -> DSM                        0.0000e+00                    OK
+  Leg 2b DSM -> Earth                       1.5847e+00   WARNING: large miss
+  Leg 3  Earth -> Jupiter                   2.1373e+00   WARNING: large miss
+
+──────────────────────────────────────────────────────────────────────────────
+  3.13  Flyby Geometry Summary (Section 4e)
+──────────────────────────────────────────────────────────────────────────────
+
+  MARS FLYBY:
+    Body:                      Mars
+    Date:                      2027-10-02
+    Flyby type:                Free (unpowered)
+    v_inf_in  (heliocentric):  [-2.90145, 3.35672, 1.06179] km/s
+    v_inf_out (heliocentric):  [-3.50670, 0.62118, 2.85142] km/s
+    |v_inf_in|:                4.56217 km/s
+    |v_inf_out|:               4.56217 km/s
+    Turn angle delta:          42.7357 deg
+    Max possible delta_max:    42.7395 deg
+    Periapsis altitude:        200 km  (rp = 3589.5 km)
+    Eccentricity:              2.74435
+
+  EARTH FLYBY:
+    Body:                      Earth
+    Date:                      2028-11-25
+    Flyby type:                Free (unpowered)
+    v_inf_in  (heliocentric):  [-6.56898, -8.64329, 0.77386] km/s
+    v_inf_out (heliocentric):  [-10.44645, -3.03531, -0.16256] km/s
+    |v_inf_in|:                10.88378 km/s
+    |v_inf_out|:               10.87970 km/s
+    Speed mismatch:            0.0041 km/s
+    Turn angle delta:          36.8684 deg
+    Max possible delta_max:    39.1795 deg
+    Required periapsis rp:     7276.2 km
+    Minimum allowed rp:        6671.0 km
+    Eccentricity:              2.98255
+    Feasibility:               FEASIBLE
+
+==============================================================================
+  SECTION 4 — GENERATED FIGURES
+==============================================================================
+
+  The following figures accompany this report (generated by task_report_figures.py):
+
+  Figure 1 — fig1_solar_system.png
+    3D solar system snapshot on December 25, 2026 at 23:12 UTC.
+    All 9 planets shown with orbit traces. Planet positions marked.
+
+  Figure 2 — fig2_trajectory_3d.png
+    3D EMEJ trajectory with all 4 spacecraft legs:
+      White:  Leg 1 (Earth -> Mars)
+      Yellow: Leg 2a (Mars -> DSM)
+      Cyan:   Leg 2b (DSM -> Earth)
+      Magenta:Leg 3 (Earth -> Jupiter)
+    Full planet orbits shown for Earth, Mars, and Jupiter.
+
+  Figure 3 — fig3_trajectory_2d.png
+    2D ecliptic top-down projection of same trajectory.
+    Cleaner layout for printed report — shows in-plane geometry.
+
+  Figure 4 — fig4_dv_vs_tof3.png
+    Sensitivity analysis: total mission Dv vs TOF3 (Earth-Jupiter TOF).
+    Shows feasible/infeasible Earth flyby regions.
+    Used to select TOF3 = 1100 days as optimal feasible window.
+
+  Figure 5 — fig5_dv_vs_launch.png
+    Sensitivity analysis: total mission Dv vs launch date offset.
+    Sweeps +/-90 days from selected launch date (2027-01-15).
+    Demonstrates launch window sensitivity.
+
+  Figure 6 — fig6_flyby_geometry.png
+    Hyperbolic flyby geometry diagrams for Mars and Earth flybys.
+    Shows v_inf_in, v_inf_out vectors and turn angle in ecliptic plane.
+
+
+==============================================================================
+  SECTION 5 — CONCLUSION
+==============================================================================
+
+  A four-leg Earth-Mars-Earth-Jupiter trajectory was successfully computed
+  using the patched conic approximation. The mission closely follows the
+  Europa Clipper trajectory concept, using two free gravity assists and one
+  Deep Space Maneuver.
+
+  Key results:
+    Launch date:            2027-01-15
+    Total mission duration: 1780.0 days  (4.87 years)
+    Dv1 (Earth departure):  6.2175 km/s   from 500 km LEO
+    Dv2 (DSM):              12.3150 km/s   at 1.483 AU from Sun
+    Dv3 (Jupiter capture):  16.6325 km/s   into 10000 km orbit
+    TOTAL Dv:               35.1650 km/s
+
+  The Mars free flyby (turn angle = 42.74 deg, max = 42.74 deg)
+  and Earth free flyby (turn angle = 36.87 deg, max = 39.18 deg) are
+  both physically feasible (turn within maximum, periapsis above minimum).
+
+  The DSM timing (tau = 0.0200, firing 8.4 days after Mars flyby at
+  1.4830 AU from the Sun) was found via a 480-point grid search
+  followed by Nelder-Mead refinement, minimizing the combined cost of DSM Dv,
+  Earth v_inf speed mismatch, and flyby turn angle infeasibility penalty.
+
+  The TOF3 = 1100 days was selected by sweeping the parameter space; shorter
+  durations produced infeasible Earth flyby turn angles. The sensitivity
+  figures (4 and 5) demonstrate the trade-space explored and confirm this
+  window is near a local minimum in total mission Dv.
+
+
+==============================================================================
+  END OF REPORT DATA
+==============================================================================
+
+  Appendix: Code files
+    bodies/catalog.py       — J2000 planetary orbital elements and body data
+    solvers/solver.py       — Lambert, Kepler propagation, orbit elements
+    solvers/dsm.py          — DSM grid search and Nelder-Mead optimizer
+    task1_planets.py        — Task 1 planetary state computation and plotting
+    task2_emej.py           — Task 2 full EMEJ trajectory (interactive mode)
+    scan_emej_freeflyby.py  — Parameter space scanner (porkchop-style)
+    task_report_figures.py  — All 6 report-quality figures
+    generate_report.py      — This report generator
